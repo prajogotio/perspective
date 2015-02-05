@@ -205,7 +205,7 @@ function Information(parent, heading, pitch) {
 	setStyle(this.container, {
 		'position' : 'absolute',
 		'opacity' : '0',
-		'overflow' : 'auto',
+		'overflow' : 'hidden',
 	});
 }
 
@@ -250,6 +250,9 @@ function PersonCommentContent(thumbnailSource, headerPhotoSource, comment) {
 PersonCommentContent.prototype.initializePersonCommentContent = function() {
 	this.container = document.createElement('div');
 
+	setStyle(this.container, {
+		'overflow' : 'auto',
+	});
 	this.thumbnailContainer = document.createElement('div');
 	setStyle(this.thumbnailContainer, {
 		'position' : 'relative',
