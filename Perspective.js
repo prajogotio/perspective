@@ -155,6 +155,7 @@ Perspective.prototype.setAmbientSound = function(audioSource) {
 		that.playAmbientSound();
 	});
 	audio.src = audioSource;
+	audio.volume = 0.1;
 }
 
 Perspective.prototype.playAmbientSound = function() {
@@ -207,6 +208,21 @@ function Information(parent, heading, pitch) {
 		'opacity' : '0',
 		'overflow' : 'hidden',
 	});
+	this.container.addEventListener('mouseover', this, false);
+	this.container.addEventListener('mouseleave', this, false);
+}
+
+Information.prototype.handleEvent = function(e) {
+	if(e.type == 'mouseover') {
+		setStyle(this.container, {
+			'z-index' : '100',
+		});
+	}
+	if(e.type == 'mouseleave') {
+		setStyle(this.container, {
+			'z-index' : '1',
+		});
+	}
 }
 
 Information.prototype.setContent = function(content) {
@@ -233,6 +249,7 @@ Information.prototype.update = function(heading, pitch) {
 	else this.container.style.setProperty('display', 'block');
 }
 
+
 function PersonCommentContent(thumbnailSource, headerPhotoSource, comment) {
 	var thumbnailImg = new Image();
 	thumbnailImg.src = thumbnailSource;
@@ -243,7 +260,7 @@ function PersonCommentContent(thumbnailSource, headerPhotoSource, comment) {
 	this.headerPhoto = headerPhotoImg;
 	this.width = 280;
 	this.height = 250;
-	this.thRadius = 35;
+	this.thRadius = 40;
 	this.initializePersonCommentContent();
 }
 
@@ -262,6 +279,7 @@ PersonCommentContent.prototype.initializePersonCommentContent = function() {
 		'background-color' : 'white',
 		'z-index' : '3',
 		'overflow' : 'hidden',
+		'border' : '6px solid white',
 	});
 	setTransition(this.thumbnailContainer, 'left 0.3s');
 
@@ -343,6 +361,7 @@ PersonCommentContent.prototype.handleEvent = function(e) {
 			'height' : this.thRadius+this.height+'px',
 			'opacity' : '1',
 		});
+		
 	}
 	if(e.type == 'mouseleave') {
 		setStyle(this.thumbnailContainer, {
@@ -355,9 +374,93 @@ PersonCommentContent.prototype.handleEvent = function(e) {
 				'opacity' : '0',
 			});
 		}, 220);
+		
 	}
 }
 
+
+function VideoContent(videoURI) {
+	this.height = 300;
+	this.sideLength = 70;
+
+	this.container = document.createElement('div');
+	setStyle(this.container, {
+		'height' : this.sideLength+'px',
+		'width' : this.sideLength+'px',
+		'border' : '4px solid white',
+		'overflow' : 'hidden',
+		'z-index' : '1',
+	});
+	setTransition(this.container, 'width 0.3s, height 0.3s');
+
+	this.titleDiv = document.createElement('div');
+	setStyle(this.titleDiv, {
+		'width' : '80%',
+		'text-align' : 'center',
+		'position' : 'absolute',
+		'top' : '50%',
+		'font-family' : 'Poiret One',
+		'color' : 'white',
+		'left' : '50%',
+		'z-index' : '2',
+		'opacity' : '1',
+	});
+	this.titleDiv.innerHTML = 'VIDEO';
+	this.container.appendChild(this.titleDiv);
+	setTransition(this.titleDiv, 'opacity 0.3s');
+	setTransform(this.titleDiv, 'translate(-50%,-50%)');
+
+	this.video = document.createElement('video');
+	this.video.src = videoURI.src;
+	this.video.type = videoURI.type;
+	setStyle(this.video, {
+		'height' : '100%',
+		'opacity' : '0',
+	});
+	setTransition(this.video, 'opacity 0.3s');
+
+	this.videoDiv = document.createElement('div');
+	setStyle(this.videoDiv, {
+		'z-index' : '3',
+		'height' : '100%',
+	});
+
+	this.videoDiv.appendChild(this.video);
+	this.container.appendChild(this.videoDiv);
+
+	this.container.addEventListener('mouseover', this, false);
+	this.container.addEventListener('mouseleave', this, false);
+}
+
+VideoContent.prototype.handleEvent = function(e) {
+	if(e.type == 'mouseover') {
+		setStyle(this.container, {
+			'height' : this.height + 'px',
+			'width' : '',
+		});
+		setStyle(this.video, {
+			'opacity' : '1',
+		});
+		setStyle(this.titleDiv, {
+			'opacity' : '0',
+		});
+		this.video.play();
+	}
+	if(e.type == 'mouseleave') {
+		setStyle(this.container, {
+			'height' : this.sideLength+'px',
+			'width' : this.sideLength+'px',
+		});
+		setStyle(this.video, {
+			'opacity' : '0',
+		});
+		
+		setStyle(this.titleDiv, {
+			'opacity' : '1',
+		});
+		this.video.pause();
+	}
+}
 
 //testing code
 document.addEventListener("DOMContentLoaded", function() {
@@ -372,8 +475,12 @@ document.addEventListener("DOMContentLoaded", function() {
 	var info2 = new Information(p, 125, 20);
 	info2.setContent(new PersonCommentContent('test/th2.jpg','test/h2.jpg',"Febriliani: Singapore is a lion city, and the skyscrapers divide the horizon into two."));
 
+	var vidinfo = new Information(p, 100, 0);
+	vidinfo.setContent(new VideoContent({src:'test/demo.mp4', type:'mp4'}));
+
 	p.addInfo(info);
 	p.addInfo(info2);
+	p.addInfo(vidinfo);
 
 	p.setTitle('By the side of Marina Bay');
 	setInterval(function() {
