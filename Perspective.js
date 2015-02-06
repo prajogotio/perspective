@@ -216,6 +216,19 @@ Perspective.prototype.setTitle = function(title) {
 	this.title.innerHTML = title;
 }
 
+Perspective.prototype.resetState = function() {
+	this.stopOngoingActivity();
+	for (var i=0;i<this.infoList.length;++i){
+		this.display.removeChild(this.infoList[i].container);
+	}
+	this.infoList = [];
+}
+
+Perspective.prototype.stopOngoingActivity = function() {
+	this.ambientSound.pause();
+	this.ambientSound = null;
+}
+
 function Information(parent, heading, pitch) {
 	this.parent = parent;
 	this.heading = heading;
@@ -263,7 +276,7 @@ Information.prototype.update = function(heading, pitch) {
 	this.top = this.parent.SCREEN_DISTANCE * Math.tan(beta/180 * Math.PI) + window.innerHeight/2;
 	if(beta > 180) beta -= 360;
 	if(beta < -180) beta += 360;
-	this.opacity = Math.max(0,Math.min(1, 1.1 - Math.abs(alpha)/(3*this.parent.POV_RANGE)));
+	this.opacity = Math.max(0,Math.min(1, 1 - Math.abs(alpha)/(3*this.parent.POV_RANGE)));
 	setStyle(this.container, {
 		'top' : this.top + 'px',
 		'left' : this.left + 'px',
@@ -642,9 +655,11 @@ ArticleContent.prototype.handleEvent = function(e) {
 
 
 
-function TransitNode(node) {
+function TransitNode(sphere) {
+	this.sphere = sphere;
 	
 }
+
 
 
 function PerspectiveSphere(sphere) {
@@ -653,10 +668,14 @@ function PerspectiveSphere(sphere) {
 
 PerspectiveSphere.prototype.constructFromSphere = function(sphere) {
 	var that = this;
-	this.perspective = new Perspective(sphere['panoid'], sphere['heading'], sphere['pitch']);
-	document.body.appendChild(this.perspective.container);
+	if(this.perspective == null) {
+		this.perspective = new Perspective(sphere['panoid'], sphere['heading'], sphere['pitch']);
+		document.body.appendChild(this.perspective.container);
+	} else {
+		this.perspective.photoSphere.setPano(sphere['panoid']);
+		this.perspective.photoSphere.setPov({heading:sphere['heading'],pitch:sphere['pitch']});
+	}
 	this.perspective.setAmbientSound(sphere['bgm']);
-
 	for(var i = 0; i < sphere['info'].length; ++i) {
 		var curInfo = sphere['info'][i];
 		var info = new Information(this.perspective, curInfo.heading, curInfo.pitch);
@@ -670,10 +689,18 @@ PerspectiveSphere.prototype.constructFromSphere = function(sphere) {
 		this.perspective.addInfo(info);
 	}
 
-	this.perspective.setTitle('By the side of Marina Bay');
+	this.perspective.setTitle(sphere['title']);
 	this.perspectiveLoop = setInterval(function() {
 		that.perspective.update();
 	}, 1000/60);
+}
+
+PerspectiveSphere.prototype.replaceWithOtherSphere = function(sphere) {
+	if(this.perspective != null) {
+		this.perspective.resetState();
+		clearInterval(this.perspectiveLoop);
+	}
+	this.constructFromSphere(sphere);
 }
 
 var sample_sphere = {
