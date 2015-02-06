@@ -39,6 +39,15 @@ function setTransition(elem, transition) {
 	elem.style.setProperty('-webkit-transition', transition);
 }
 
+function setFilter(elem, filter) {
+	setStyle(elem, {
+		'filter': filter,
+		'-moz-filter': filter,
+		'-webkit-filter': filter,
+	});
+}
+
+
 function Perspective(panoid, _heading, _pitch) {
 	this.command = {};
 	this.infoList = [];
@@ -47,13 +56,13 @@ function Perspective(panoid, _heading, _pitch) {
 	this.initializePerspective(panoid, _heading, _pitch);
 }
 
+
 Perspective.prototype.initializePerspective = function(panoid, _heading, _pitch) {
 	this.container = document.createElement('div');
 	this.display = document.createElement('div');
 	this.googleMap = document.createElement('div');
 	this.container.appendChild(this.display);
 	this.container.appendChild(this.googleMap);
-
 	this.headSpeed = 0;
 	this.pitchSpeed = 0;
 	this.inertialSpeed = 0.95;
@@ -217,11 +226,14 @@ Information.prototype.handleEvent = function(e) {
 		setStyle(this.container, {
 			'z-index' : '100',
 		});
+		
+		setFilter(this.parent.googleMap, 'grayscale(100%) blur(2px)');
 	}
 	if(e.type == 'mouseleave') {
 		setStyle(this.container, {
 			'z-index' : '1',
 		});
+		setFilter(this.parent.googleMap, '');
 	}
 }
 
@@ -380,7 +392,7 @@ PersonCommentContent.prototype.handleEvent = function(e) {
 
 
 function VideoContent(videoURI) {
-	this.height = 300;
+	this.height = 350;
 	this.sideLength = 70;
 
 	this.container = document.createElement('div');
@@ -424,7 +436,6 @@ function VideoContent(videoURI) {
 		'z-index' : '3',
 		'height' : '100%',
 	});
-
 	this.videoDiv.appendChild(this.video);
 	this.container.appendChild(this.videoDiv);
 
@@ -444,6 +455,7 @@ VideoContent.prototype.handleEvent = function(e) {
 		setStyle(this.titleDiv, {
 			'opacity' : '0',
 		});
+
 		this.video.play();
 	}
 	if(e.type == 'mouseleave') {
@@ -461,6 +473,18 @@ VideoContent.prototype.handleEvent = function(e) {
 		this.video.pause();
 	}
 }
+
+function LandscapeContent(imgSource, title, text) {
+	
+}
+
+
+
+function TransitNode(node) {
+	
+}
+
+
 
 //testing code
 document.addEventListener("DOMContentLoaded", function() {
