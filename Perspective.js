@@ -403,32 +403,38 @@ PersonCommentContent.prototype.handleEvent = function(e) {
 function VideoContent(videoURI) {
 	this.height = 350;
 	this.sideLength = 70;
-
+	this.videoIcon = new Image();
+	this.videoIcon.src = 'res/video.png';
+	setStyle(this.videoIcon, {
+		'height' : this.sideLength+'px',
+	});
 	this.container = document.createElement('div');
 	setStyle(this.container, {
 		'height' : this.sideLength+'px',
 		'width' : this.sideLength+'px',
-		'border' : '2px solid white',
+		'border' : '0px solid white',
 		'overflow' : 'hidden',
 		'z-index' : '1',
 	});
 	setTransition(this.container, 'width 0.5s, height 0.5s, border-width 0.5s');
+	this.container.appendChild(this.videoIcon);
 	this.titleDiv = document.createElement('div');
 	setStyle(this.titleDiv, {
-		'width' : '80%',
+		'width' : '100%',
 		'text-align' : 'center',
 		'position' : 'absolute',
-		'top' : '50%',
+		//'top' : '50%',
 		'font-family' : 'Poiret One',
 		'color' : 'white',
-		'left' : '50%',
+		//'left' : '50%',
 		'z-index' : '2',
 		'opacity' : '1',
 	});
-	this.titleDiv.innerHTML = 'VIDEO';
+	//this.titleDiv.innerHTML = 'VIDEO';
+	this.titleDiv.appendChild(this.videoIcon);
 	this.container.appendChild(this.titleDiv);
 	setTransition(this.titleDiv, 'opacity 0.5s');
-	setTransform(this.titleDiv, 'translate(-50%,-50%)');
+	//setTransform(this.titleDiv, 'translate(-50%,-50%)');
 
 	this.video = document.createElement('video');
 	this.video.src = videoURI.src;
@@ -471,7 +477,7 @@ VideoContent.prototype.handleEvent = function(e) {
 		setStyle(this.container, {
 			'height' : this.sideLength+'px',
 			'width' : this.sideLength+'px',
-			'border-width' : '2px',
+			'border-width' : '0px',
 		});
 		setStyle(this.video, {
 			'opacity' : '0',
