@@ -525,7 +525,7 @@ function ArticleContent(imgSource, title, body) {
 
 	this.imgDiv.appendChild(this.img);
 
-	this.thumbnailDiv.innerHTML = 'ARTICLE';
+	this.thumbnailDiv.innerHTML = this.title.slice(0, 15) + (this.title.length > 15 ? "..." : "");
 
 	setStyle(this.titleText, {
 		'font-family' : 'Dosis',
@@ -555,7 +555,7 @@ function ArticleContent(imgSource, title, body) {
 	setStyle(this.thumbnailDiv, {
 		'position': 'absolute',
 		'top' : '0',
-		'font-size' : '1.2em',
+		'font-size' : '1em',
 		'color' : 'black',
 		'font-family' : 'Open Sans Condensed',
 		'text-align' : 'center',
