@@ -49,7 +49,6 @@ function setFilter(elem, filter) {
 	});
 }
 
-
 function Perspective(panoid, _heading, _pitch) {
 	this.command = {};
 	this.infoList = [];
@@ -648,32 +647,80 @@ function TransitNode(node) {
 }
 
 
+function PerspectiveSphere(sphere) {
+	this.constructFromSphere(sphere);
+}
+
+PerspectiveSphere.prototype.constructFromSphere = function(sphere) {
+	var that = this;
+	this.perspective = new Perspective(sphere['panoid'], sphere['heading'], sphere['pitch']);
+	document.body.appendChild(this.perspective.container);
+	this.perspective.setAmbientSound(sphere['bgm']);
+
+	for(var i = 0; i < sphere['info'].length; ++i) {
+		var curInfo = sphere['info'][i];
+		var info = new Information(this.perspective, curInfo.heading, curInfo.pitch);
+		if(curInfo.type == 'person_comment') {
+			info.setContent(new PersonCommentContent(curInfo.thumbnail, curInfo.header_photo, curInfo.comment));
+		} else if (curInfo.type == 'video') {
+			info.setContent(new VideoContent(curInfo.video_uri));
+		} else if (curInfo.type == 'article') {
+			info.setContent(new ArticleContent(curInfo.img, curInfo.title, curInfo.body));
+		}
+		this.perspective.addInfo(info);
+	}
+
+	this.perspective.setTitle('By the side of Marina Bay');
+	this.perspectiveLoop = setInterval(function() {
+		that.perspective.update();
+	}, 1000/60);
+}
+
+var sample_sphere = {
+	panoid : 'oacawDojVGkAAAQYfeZmJg',
+	heading : 90,
+	pitch : 0,
+	bgm : 'sounds/wind-breeze.mp3',
+	title : 'By the side of Marina Bay',
+	info : [
+		{
+			type : 'person_comment',
+			thumbnail : 'test/th1.jpg',
+			header_photo : 'test/h1.jpg',
+			comment : "Prajogo: Hello There! Welcome to Singapore! You are currently in Marina Bay, a place where a lot of tall buildings can be seen!",
+			heading : 80,
+			pitch : 15,
+		},
+		{
+			type : 'person_comment',
+			thumbnail : 'test/th2.jpg',
+			header_photo : 'test/h2.jpg',
+			comment : "Febriliani: Singapore is a lion city, and the skyscrapers divide the horizon into two.",
+			heading : 125,
+			pitch : 20,
+		},
+		{
+			type : 'video',
+			video_uri : {
+				src : 'test/demo.mp4',
+				type : 'mp4',
+			},
+			heading : 100,
+			pitch : 0,
+		},
+		{
+			type : 'article',
+			img : 'test/bgimg.jpg',
+			title : 'Hello There',
+			body : 'This is the best thing that you can find in singapore. the thing are so big that there are so many other big stuff that can be found. however they may not make sense in first glance. but the will sooner or later',
+			heading : 40,
+			pitch : 10,
+		}
+	],
+}
 
 //testing code
 document.addEventListener("DOMContentLoaded", function() {
 	initializePerspectiveService();
-	var p = new Perspective('oacawDojVGkAAAQYfeZmJg', 90, 0);
-	document.body.appendChild(p.container);
-	p.setAmbientSound('sounds/wind-breeze.mp3');
-
-	var info = new Information(p, 80, 15);
-	info.setContent(new PersonCommentContent('test/th1.jpg','test/h1.jpg',"Prajogo: Hello There! Welcome to Singapore! You are currently in Marina Bay, a place where a lot of tall buildings can be seen!"));
-
-	var info2 = new Information(p, 125, 20);
-	info2.setContent(new PersonCommentContent('test/th2.jpg','test/h2.jpg',"Febriliani: Singapore is a lion city, and the skyscrapers divide the horizon into two."));
-
-	var vidinfo = new Information(p, 100, 0);
-	vidinfo.setContent(new VideoContent({src:'test/demo.mp4', type:'mp4'}));
-
-	var articleInfo = new Information(p, 40, 10);
-	articleInfo.setContent(new ArticleContent('test/bgimg.jpg', "Hello There", "This is the best thing that you can find in singapore. the thing are so big that there are so many other big stuff that can be found. however they may not make sense in first glance. but the will sooner or later"));
-
-	p.addInfo(info);
-	p.addInfo(info2);
-	p.addInfo(vidinfo);
-	p.addInfo(articleInfo);
-	p.setTitle('By the side of Marina Bay');
-	setInterval(function() {
-		p.update();
-	}, 1000/60);
+	var p = new PerspectiveSphere(sample_sphere);
 })
