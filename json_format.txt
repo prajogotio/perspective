@@ -1,0 +1,30 @@
+Perspective o--> Information o--> Content
+
+Classes:
+
+Class Perspective
+Requires:
+- string panoid : panorama id
+- int heading : initial heading (in degree)
+- int pitch : initial pitch (in degree)
+- Information[] infoList : @array all related Information instances
+
+Class Information
+Requires:
+- int heading : information heading (in degree)
+- int pitch : information pitch (in degree)
+- Content content : a Content instance
+
+Class PersonCommentContent
+extends Content
+Requires
+- string thumbnail : image url
+- string header_photo : image url
+- string comment : user comment
+
+Class VideoContent 
+extends Content
+Requires:
+- Object videoURI : A json object with the following fields:
+		- string src : video resource url
+		- string type : type of video (mp4, mov)
