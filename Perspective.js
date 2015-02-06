@@ -548,7 +548,7 @@ function ArticleContent(imgSource, title, body) {
 		'overflow' : 'hidden',
 		'width' : this.sideLength+'px',
 		'height' : this.sideLength+'px',
-		'background-color' : '#FFEA16',
+		'background-color' : '#FF5934',
 		'border-radius' : '10px',
 	});
 
@@ -556,7 +556,7 @@ function ArticleContent(imgSource, title, body) {
 		'position': 'absolute',
 		'top' : '0',
 		'font-size' : '1em',
-		'color' : 'black',
+		'color' : 'white',
 		'font-family' : 'Open Sans Condensed',
 		'text-align' : 'center',
 		'padding' : '5px',
@@ -585,14 +585,14 @@ function ArticleContent(imgSource, title, body) {
 	
 	setStyle(this.titleDiv, {
 		'position' : 'relative',
-		'background-color' : 'rgb(202, 171, 85)',
+		'background-color' : 'rgba(202, 171, 85, 0.8)',
 		'height' : '30%',
 		'width' : '100%',
 	});
 
 	setStyle(this.bodyDiv, {
 		'position' : 'relative',
-		'background-color' : 'rgb(202, 171, 85)',
+		'background-color' : 'rgba(202, 171, 85, 0.8)',
 		'height' : '70%',
 		'width' : '100%',
 	});
