@@ -1,5 +1,7 @@
 function initializePerspectiveService() {
 	loadStaticFile("http://fonts.googleapis.com/css?family=Poiret+One", "css");
+	loadStaticFile('http://fonts.googleapis.com/css?family=Open+Sans+Condensed:700', 'css');
+	loadStaticFile('http://fonts.googleapis.com/css?family=Dosis','css');
 }
 
 function loadStaticFile(filename, filetype){
@@ -99,9 +101,16 @@ Perspective.prototype.initializePerspective = function(panoid, _heading, _pitch)
 	document.addEventListener('mouseleave', this, false);
 }
 
+Perspective.prototype.clearMovementCommands = function(){
+	this.command['LEFT'] = false;
+	this.command['RIGHT'] = false;
+	this.command['UP'] = false;
+	this.command['DOWN'] = false;
+}
+
 Perspective.prototype.handleEvent = function(e) {
 	if(e.type == 'mousemove') {
-		this.command = {};
+		this.clearMovementCommands();
 		if(e.pageX < window.innerWidth/4) {
 			this.command['LEFT'] = true;
 		}
@@ -116,7 +125,7 @@ Perspective.prototype.handleEvent = function(e) {
 		}
 	}
 	if(e.type == 'mouseleave') {
-		this.command = {};
+		this.clearMovementCommands();
 	}
 }
 
@@ -137,6 +146,9 @@ Perspective.prototype.pitchDown = function() {
 }
 
 Perspective.prototype.updatePhotoSphere = function() {
+	if(this.command['INACTIVE_HOVER']) {
+		this.clearMovementCommands();
+	}
 	if(this.command['UP']) this.pitchUp();
 	if(this.command['DOWN']) this.pitchDown();
 	if(this.command['LEFT']) this.headLeft();
@@ -223,13 +235,14 @@ function Information(parent, heading, pitch) {
 
 Information.prototype.handleEvent = function(e) {
 	if(e.type == 'mouseover') {
+		this.parent.command['INACTIVE_HOVER'] = true;
 		setStyle(this.container, {
 			'z-index' : '100',
 		});
-		
 		setFilter(this.parent.googleMap, 'grayscale(100%) blur(2px)');
 	}
 	if(e.type == 'mouseleave') {
+		this.parent.command['INACTIVE_HOVER'] = false;
 		setStyle(this.container, {
 			'z-index' : '1',
 		});
@@ -251,7 +264,7 @@ Information.prototype.update = function(heading, pitch) {
 	this.top = this.parent.SCREEN_DISTANCE * Math.tan(beta/180 * Math.PI) + window.innerHeight/2;
 	if(beta > 180) beta -= 360;
 	if(beta < -180) beta += 360;
-	this.opacity = Math.max(0,1 - Math.abs(alpha)/(3*this.parent.POV_RANGE));
+	this.opacity = Math.max(0,Math.min(1, 1.1 - Math.abs(alpha)/(3*this.parent.POV_RANGE)));
 	setStyle(this.container, {
 		'top' : this.top + 'px',
 		'left' : this.left + 'px',
@@ -291,7 +304,7 @@ PersonCommentContent.prototype.initializePersonCommentContent = function() {
 		'background-color' : 'white',
 		'z-index' : '3',
 		'overflow' : 'hidden',
-		'border' : '6px solid white',
+		'border' : '2px solid white',
 	});
 	setTransition(this.thumbnailContainer, 'left 0.3s');
 
@@ -305,9 +318,7 @@ PersonCommentContent.prototype.initializePersonCommentContent = function() {
 		'height' : '0px',
 		'opacity' : '0',
 	});
-	setTransition(this.bodyContainer, 'width 0.3s');
-	setTransition(this.bodyContainer, 'height 0.3s');
-	setTransition(this.bodyContainer, 'opacity 0.3s');
+	setTransition(this.bodyContainer, 'width 0.5s, height 0.5s, opacity 0.5s');
 
 	this.headerPhotoContainer = document.createElement('div');
 	setStyle(this.headerPhotoContainer, {
@@ -379,13 +390,11 @@ PersonCommentContent.prototype.handleEvent = function(e) {
 		setStyle(this.thumbnailContainer, {
 			'left' : '0px',
 		})
-		setTimeout(function() {
-			setStyle(that.bodyContainer, {
-				'width' : '0px',
-				'height' : '0px',
-				'opacity' : '0',
-			});
-		}, 220);
+		setStyle(that.bodyContainer, {
+			'width' : '0px',
+			'height' : '0px',
+			'opacity' : '0',
+		});
 		
 	}
 }
@@ -399,12 +408,11 @@ function VideoContent(videoURI) {
 	setStyle(this.container, {
 		'height' : this.sideLength+'px',
 		'width' : this.sideLength+'px',
-		'border' : '4px solid white',
+		'border' : '2px solid white',
 		'overflow' : 'hidden',
 		'z-index' : '1',
 	});
-	setTransition(this.container, 'width 0.3s, height 0.3s');
-
+	setTransition(this.container, 'width 0.5s, height 0.5s, border-width 0.5s');
 	this.titleDiv = document.createElement('div');
 	setStyle(this.titleDiv, {
 		'width' : '80%',
@@ -419,7 +427,7 @@ function VideoContent(videoURI) {
 	});
 	this.titleDiv.innerHTML = 'VIDEO';
 	this.container.appendChild(this.titleDiv);
-	setTransition(this.titleDiv, 'opacity 0.3s');
+	setTransition(this.titleDiv, 'opacity 0.5s');
 	setTransform(this.titleDiv, 'translate(-50%,-50%)');
 
 	this.video = document.createElement('video');
@@ -429,7 +437,7 @@ function VideoContent(videoURI) {
 		'height' : '100%',
 		'opacity' : '0',
 	});
-	setTransition(this.video, 'opacity 0.3s');
+	setTransition(this.video, 'opacity 0.5s');
 
 	this.videoDiv = document.createElement('div');
 	setStyle(this.videoDiv, {
@@ -448,6 +456,7 @@ VideoContent.prototype.handleEvent = function(e) {
 		setStyle(this.container, {
 			'height' : this.height + 'px',
 			'width' : '',
+			'border-width' : '1px',
 		});
 		setStyle(this.video, {
 			'opacity' : '1',
@@ -462,6 +471,7 @@ VideoContent.prototype.handleEvent = function(e) {
 		setStyle(this.container, {
 			'height' : this.sideLength+'px',
 			'width' : this.sideLength+'px',
+			'border-width' : '2px',
 		});
 		setStyle(this.video, {
 			'opacity' : '0',
@@ -474,8 +484,155 @@ VideoContent.prototype.handleEvent = function(e) {
 	}
 }
 
-function LandscapeContent(imgSource, title, text) {
+function ArticleContent(imgSource, title, body) {
+	this.height = 440;
+	this.width = 380;
+	this.sideLength = 70;
+	this.container = document.createElement('div');
+	this.img = new Image();
+	this.img.src = imgSource;
+
+	this.title = title;
+	this.body = body;
+
+	this.thumbnailDiv = document.createElement('div');
+	this.titleDiv = document.createElement('div');
+	this.bodyDiv = document.createElement('div');
+	this.imgDiv = document.createElement('div');
+	this.contentDiv = document.createElement('div');
+
+	this.contentDiv.appendChild(this.titleDiv);
+	this.contentDiv.appendChild(this.bodyDiv);
+
+	this.container.appendChild(this.imgDiv);
+	this.container.appendChild(this.contentDiv);
+	this.container.appendChild(this.thumbnailDiv);
+
+	this.bodyText = document.createElement('div');
+	this.titleText = document.createElement('div');
+
+	this.bodyText.innerHTML = this.body;
+	this.titleText.innerHTML = "\"" + this.title + "\"";
+
+	this.bodyDiv.appendChild(this.bodyText);
+	this.titleDiv.appendChild(this.titleText);
+
+	this.imgDiv.appendChild(this.img);
+
+	this.thumbnailDiv.innerHTML = 'ARTICLE';
+
+	setStyle(this.titleText, {
+		'font-family' : 'Dosis',
+		'font-size' : '1.8em',
+		'text-align' : 'center',
+		'position' : 'absolute',
+		'width' : '100%',
+		'top' : '47%',
+		'color' : 'white',
+	});
+
+	setStyle(this.bodyText, {
+		'font-family' : 'Dosis',
+		'font-size' : '1.1em',
+		'color' : 'white',
+		'padding' : '20px',
+	});
+
+	setStyle(this.container, {
+		'overflow' : 'hidden',
+		'width' : this.sideLength+'px',
+		'height' : this.sideLength+'px',
+		'background-color' : '#FFEA16',
+		'border-radius' : '10px',
+	});
+
+	setStyle(this.thumbnailDiv, {
+		'position': 'absolute',
+		'top' : '0',
+		'font-size' : '1.2em',
+		'color' : 'black',
+		'font-family' : 'Open Sans Condensed',
+		'text-align' : 'center',
+		'padding' : '5px',
+		'opacity' : '1',
+	});
+
+	setStyle(this.imgDiv, {
+		'opacity' : '0',
+		'height' : '100%',
+		'z-index' : '1',
+	})
+
+	setStyle(this.img, {
+		'height' : '100%',
+	})
 	
+	setStyle(this.contentDiv, {
+		'opacity' : '0',
+		'height' : this.height+'px',
+		'position' : 'absolute',
+		'width' : '60%',
+		'top' : '0px',
+		'right' : '0px',
+		'z-index' : '2',
+	});
+	
+	setStyle(this.titleDiv, {
+		'position' : 'relative',
+		'background-color' : 'rgb(202, 171, 85)',
+		'height' : '30%',
+		'width' : '100%',
+	});
+
+	setStyle(this.bodyDiv, {
+		'position' : 'relative',
+		'background-color' : 'rgb(202, 171, 85)',
+		'height' : '70%',
+		'width' : '100%',
+	});
+
+	setTransition(this.thumbnailDiv, 'opacity 0.5s');
+	setTransition(this.imgDiv, 'opacity 0.5s');
+	setTransition(this.container, 'width 0.5s, height 0.5s');
+	setTransition(this.contentDiv, 'opacity 0.5s');
+
+
+	this.container.addEventListener('mouseover', this, false);
+	this.container.addEventListener('mouseleave', this, false);
+
+}
+
+ArticleContent.prototype.handleEvent = function(e) {
+	if(e.type == 'mouseover') {
+		setStyle(this.thumbnailDiv, {
+			'opacity' : '0',
+		});
+		setStyle(this.imgDiv, {
+			'opacity' : '1',
+		});
+		setStyle(this.container, {
+			'width' : this.width + 'px',
+			'height' : this.height + 'px',
+		});
+		setStyle(this.contentDiv, {
+			'opacity' : '1',
+		});
+	}
+	if(e.type == 'mouseleave') {
+		setStyle(this.thumbnailDiv, {
+			'opacity' : '1',
+		});
+		setStyle(this.imgDiv, {
+			'opacity' : '0',
+		});
+		setStyle(this.container, {
+			'width' : this.sideLength + 'px',
+			'height' : this.sideLength + 'px',
+		});
+		setStyle(this.contentDiv, {
+			'opacity' : '0',
+		});
+	}
 }
 
 
@@ -502,10 +659,13 @@ document.addEventListener("DOMContentLoaded", function() {
 	var vidinfo = new Information(p, 100, 0);
 	vidinfo.setContent(new VideoContent({src:'test/demo.mp4', type:'mp4'}));
 
+	var articleInfo = new Information(p, 40, 10);
+	articleInfo.setContent(new ArticleContent('test/bgimg.jpg', "Hello There", "This is the best thing that you can find in singapore. the thing are so big that there are so many other big stuff that can be found. however they may not make sense in first glance. but the will sooner or later"));
+
 	p.addInfo(info);
 	p.addInfo(info2);
 	p.addInfo(vidinfo);
-
+	p.addInfo(articleInfo);
 	p.setTitle('By the side of Marina Bay');
 	setInterval(function() {
 		p.update();
