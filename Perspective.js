@@ -655,18 +655,63 @@ ArticleContent.prototype.handleEvent = function(e) {
 
 
 
-function TransitNode(sphere) {
-	this.sphere = sphere;
-	
+function TransitNode(sphereID, title, parent) {
+	this.parent = parent;
+	this.radius = 80;
+	this.nextSphereID = sphereID;
+	this.container = document.createElement('div');
+	setStyle(this.container, {
+		'border-radius' : this.radius + 'px',
+		'width' : this.radius + 'px',
+		'height' : this.radius + 'px',
+		'font-family' : 'Open Sans Condensed',
+		'font-size' : '1.1em',
+		'text-align' : 'center',
+		'background-color' : 'yellow',
+		'color' : 'black',
+		'padding' : '10px',
+		'cursor' : 'pointer',
+	})
+	setTransition(this.container, 'border 0.3s');
+	this.container.innerHTML = 'GO TO: ' + title;
+
+	this.container.addEventListener('mouseover', this, false);
+	this.container.addEventListener('click', this, false);
+	this.container.addEventListener('mouseleave', this, false);
+}
+
+TransitNode.prototype.handleEvent = function(e) {
+	var that = this;
+	if(e.type == 'mouseover') {
+		setStyle(this.container, {
+			'border' : '2px solid red',
+		})
+	}
+	if(e.type == 'mouseleave') {
+		setStyle(this.container, {
+			'border' : '',
+		})
+	}
+	if(e.type == 'click') {
+		setStyle(this.container, {
+			'border' : '2px solid green',
+			'background-color' : 'black',
+			'color' : 'white',
+		})
+		setTimeout(function() {
+			that.parent.requestNodeTransition(that.nextSphereID);
+		}, 300);
+	}
 }
 
 
 
-function PerspectiveSphere(sphere) {
-	this.constructFromSphere(sphere);
+function PerspectiveManager(route, currentSphere) {
+	this.route = route;
+	this.constructFromSphere(currentSphere);
 }
 
-PerspectiveSphere.prototype.constructFromSphere = function(sphere) {
+PerspectiveManager.prototype.constructFromSphere = function(sphere) {
 	var that = this;
 	if(this.perspective == null) {
 		this.perspective = new Perspective(sphere['panoid'], sphere['heading'], sphere['pitch']);
@@ -685,6 +730,8 @@ PerspectiveSphere.prototype.constructFromSphere = function(sphere) {
 			info.setContent(new VideoContent(curInfo.video_uri));
 		} else if (curInfo.type == 'article') {
 			info.setContent(new ArticleContent(curInfo.img, curInfo.title, curInfo.body));
+		} else if (curInfo.type == 'transit') {
+			info.setContent(new TransitNode(curInfo.sphere_id, this.route[curInfo.sphere_id]['title'], this));
 		}
 		this.perspective.addInfo(info);
 	}
@@ -695,7 +742,7 @@ PerspectiveSphere.prototype.constructFromSphere = function(sphere) {
 	}, 1000/60);
 }
 
-PerspectiveSphere.prototype.replaceWithOtherSphere = function(sphere) {
+PerspectiveManager.prototype.replaceWithOtherSphere = function(sphere) {
 	if(this.perspective != null) {
 		this.perspective.resetState();
 		clearInterval(this.perspectiveLoop);
@@ -703,51 +750,71 @@ PerspectiveSphere.prototype.replaceWithOtherSphere = function(sphere) {
 	this.constructFromSphere(sphere);
 }
 
-var sample_sphere = {
-	panoid : 'oacawDojVGkAAAQYfeZmJg',
-	heading : 90,
-	pitch : 0,
-	bgm : 'sounds/wind-breeze.mp3',
-	title : 'By the side of Marina Bay',
-	info : [
-		{
-			type : 'person_comment',
-			thumbnail : 'test/th1.jpg',
-			header_photo : 'test/h1.jpg',
-			comment : "Prajogo: Hello There! Welcome to Singapore! You are currently in Marina Bay, a place where a lot of tall buildings can be seen!",
-			heading : 80,
-			pitch : 15,
-		},
-		{
-			type : 'person_comment',
-			thumbnail : 'test/th2.jpg',
-			header_photo : 'test/h2.jpg',
-			comment : "Febriliani: Singapore is a lion city, and the skyscrapers divide the horizon into two.",
-			heading : 125,
-			pitch : 20,
-		},
-		{
-			type : 'video',
-			video_uri : {
-				src : 'test/demo.mp4',
-				type : 'mp4',
-			},
-			heading : 100,
-			pitch : 0,
-		},
-		{
-			type : 'article',
-			img : 'test/bgimg.jpg',
-			title : 'Hello There',
-			body : 'This is the best thing that you can find in singapore. the thing are so big that there are so many other big stuff that can be found. however they may not make sense in first glance. but the will sooner or later',
-			heading : 40,
-			pitch : 10,
-		}
-	],
+PerspectiveManager.prototype.requestNodeTransition = function(sphereID) {
+	if(this.route[sphereID] != null) {
+		this.playLoadingEffect();
+		this.replaceWithOtherSphere(this.route[sphereID]);
+		setFilter(this.perspective.googleMap, '');
+	}
 }
+
+PerspectiveManager.prototype.playLoadingEffect = function() {
+
+}
+
+var route = {
+	'first_sphere' : {
+		panoid : 'oacawDojVGkAAAQYfeZmJg',
+		heading : 90,
+		pitch : 0,
+		bgm : 'sounds/wind-breeze.mp3',
+		title : 'By the side of Marina Bay',
+		info : [
+			{
+				type : 'person_comment',
+				thumbnail : 'test/th1.jpg',
+				header_photo : 'test/h1.jpg',
+				comment : "Prajogo: Hello There! Welcome to Singapore! You are currently in Marina Bay, a place where a lot of tall buildings can be seen!",
+				heading : 80,
+				pitch : 15,
+			},
+			{
+				type : 'person_comment',
+				thumbnail : 'test/th2.jpg',
+				header_photo : 'test/h2.jpg',
+				comment : "Febriliani: Singapore is a lion city, and the skyscrapers divide the horizon into two.",
+				heading : 125,
+				pitch : 20,
+			},
+			{
+				type : 'video',
+				video_uri : {
+					src : 'test/demo.mp4',
+					type : 'mp4',
+				},
+				heading : 100,
+				pitch : 0,
+			},
+			{
+				type : 'article',
+				img : 'test/bgimg.jpg',
+				title : 'Hello There',
+				body : 'This is the best thing that you can find in singapore. the thing are so big that there are so many other big stuff that can be found. however they may not make sense in first glance. but the will sooner or later',
+				heading : 40,
+				pitch : 10,
+			},
+			{
+				type : 'transit',
+				sphere_id : 'first_sphere',
+				heading : 120,
+				pitch : 0,
+			}
+		],
+	}
+};
 
 //testing code
 document.addEventListener("DOMContentLoaded", function() {
 	initializePerspectiveService();
-	var p = new PerspectiveSphere(sample_sphere);
+	var p = new PerspectiveManager(route, route['first_sphere']);
 })
